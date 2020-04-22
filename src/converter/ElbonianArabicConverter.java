@@ -27,9 +27,33 @@ public class ElbonianArabicConverter {
      * @throws ValueOutOfBoundsException Thrown if the value is an Arabic number that cannot be represented
      * in the Elbonian number system.
      */
+
+
+      // The Elbonian numerals are represented by the following letters of the alphabet:
+      // M = 1,000	
+      // C = 100		D = 300		E = 600
+      // X = 10		Y = 30		Z = 60
+      // I = 1		J = 3		K = 6
+      // For example, 2394 would be represented in Elbonian as MMDZYJI.
+      // •	M, C, X, and I. These letters can only appear a maximum of two times in a number.
+      // •	D, E, Y, Z, J, and K. These letters can only appear once in a number.
+      // •	If both D and E appear, then C cannot appear in a number
+      // •	If both Y and Z appear, then X cannot appear in a number
+      // •	If both J and K appear, then I cannot appear in a number
+      // •	Numbers are represented by the letters from the greatest value down to the lowest value. In other words, the letter I would never appear before the letters M, D, X, or J. The letter D would never appear before E or M but would appear before Y. The letters are summed together to determine the value.
+      // •	Lowercase letters are not permitted
+      // https://stackoverflow.com/questions/10575624/java-string-see-if-a-string-contains-only-numbers-and-not-letters
+
+
     public ElbonianArabicConverter(String number) throws MalformedNumberException, ValueOutOfBoundsException {
+      HashMap<String, Char> hashOfLetters = new HashMap<String, Char>;
+      
+      for(int i = 0; i < number.length(), i++){
+        hashOfLetters.put(number.charat(i))
+      }
 
         // TODO check to see if the number is valid, then set it equal to the string
+        number = number.replaceAll("\\s", "");
         this.number = number;
     }
 
