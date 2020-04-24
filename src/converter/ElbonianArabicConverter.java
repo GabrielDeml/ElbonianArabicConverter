@@ -15,7 +15,16 @@ public class ElbonianArabicConverter {
 
     // A string that holds the number (Elbonian or Arabic) you would like to convert
     // TODO make final again
-    private String number;
+    private final String number;
+
+    //list of letters from smallest to largest
+    private List<Character> letters = new LinkedList<Character>(Arrays.asList('I', 'J', 'K', 'X', 'Y', 'Z', 'C', 'D', 'E', 'M'));
+    private HashMap<Character, Integer> letterPriority = new HashMap<Character, Integer>();
+
+    //list of numbers smallest to largest
+    private List<Integer> numberList = new LinkedList<Integer>(Arrays.asList(1, 3, 6, 10, 30, 60, 100, 300, 600, 1000));
+    private HashMap<Character, Integer> characterToElbonian = new HashMap<Character, Integer>();
+
 
     /**
      * Constructor for the ElbonianArabic class that takes a string. The string should contain a valid
@@ -62,20 +71,22 @@ public class ElbonianArabicConverter {
         twoBadLetters.stream().map(character -> hashOf2BadLetters.add(character));
         threeBadLetters.stream().map(character -> hashOf3BadLetters.add(character));
 
-        //list of letters from smallest to largest
-        List<Character> Letters = Arrays.asList('I', 'J', 'K', 'X', 'Y', 'Z', 'C', 'D', 'E', 'M');
-        HashMap<Character, Integer> letterNumConversion = new HashMap<Character, Integer>();
+        //filling hashmap to connect Elbonian to integers
+        for (int i = 0; i < letters.size(); i++) {
+            characterToElbonian.put(letters.get(i), numberList.get(i));
+        }
+
 
         // putting list into hashmap
-        for (int i = 0; i < Letters.size(); i++) {
-            letterNumConversion.put(Letters.get(i), i);
+        for (int i = 0; i < letters.size(); i++) {
+            letterPriority.put(letters.get(i), i);
         }
 
         // checking for proper order of letters
         // checking for lowercase letters
         int minVal = 0;
         for (int i = 0; i < number.length(); i++) {
-            int lastEbloianLetter = letterNumConversion.get(number.charAt(i));
+            int lastEbloianLetter = letterPriority.get(number.charAt(i));
             if (lastEbloianLetter < minVal) {
                 throw new MalformedNumberException("error improper order");
             }
@@ -126,41 +137,12 @@ public class ElbonianArabicConverter {
      */
     public int toArabic() {
         // TODO Fill in the method's body
-        int convertedNumber;
-        //if already is a number cast to int and return
-        if () {
-            convertedNumber = Integer.parseInt(number);
-        }
+        int convertedNumber = 0;
         //if its in elbonian
-        if (number.indexOf('M') != -1) {
-            convertedNumber += 1000;
-        }
-        if (number.indexOf('E') != -1) {
-            convertedNumber += 600;
-        }
-        if (number.indexOf('D') != -1) {
-            convertedNumber += 300;
-        }
-        if (number.indexOf('C') != -1) {
-            convertedNumber += 100;
-        }
-        if (number.indexOf('Z') != -1) {
-            convertedNumber += 60;
-        }
-        if (number.indexOf('Y') != -1) {
-            convertedNumber += 30;
-        }
-        if (number.indexOf('X') != -1) {
-            convertedNumber += 10;
-        }
-        if (number.indexOf('K') != -1) {
-            convertedNumber += 6;
-        }
-        if (number.indexOf('J') != -1) {
-            convertedNumber += 3;
-        }
-        if (number.indexOf('I') != -1) {
-            convertedNumber += 1;
+        if (number.matches("[0-9]+") != true) {
+            for (char c : number.toCharArray()) {
+                convertedNumber += characterToElbonian.get(c);
+            }
         }
         return convertedNumber;
     }
@@ -171,56 +153,23 @@ public class ElbonianArabicConverter {
      * @return An Elbonian value
      */
     public String toElbonian() {
+        String convertedString = "";
+        int convertedNumber;
         // TODO Fill in the method's body
         //if number is already in Elbonian format
-        if () {
-            return number;
-        }
         //if number is in arabic format
-        String convertedString;
-        int convertedNumber;
-        convertedNumber = Integer.parseInt(number);
-        if (convertedNumber >= 1000) {
-            convertedString += "M";
-            convertedNumber -= 1000;
+        if (number.matches("[0-9]+") == true) {
+
+            convertedNumber = Integer.parseInt(number);
+            for (int i = letters.size(); i > 0; i--) {
+                while (convertedNumber > characterToElbonian.get(letters.get(i))) {
+                    convertedNumber -= characterToElbonian.get(numberList.get(i));
+                    convertedString += characterToElbonian.get(letters.get(i));
+                }
+            }
+            return convertedString;
         }
-        if (convertedNumber >= 600) {
-            convertedString += "E";
-            convertedNumber -= 600;
-        }
-        if (convertedNumber >= 300) {
-            convertedString += "D";
-            convertedNumber -= 300;
-        }
-        if (convertedNumber >= 100) {
-            convertedString += "C";
-            convertedNumber -= 100;
-        }
-        if (convertedNumber >= 60) {
-            convertedString += "Z";
-            convertedNumber -= 60;
-        }
-        if (convertedNumber >= 30) {
-            convertedString += "Y";
-            convertedNumber -= 30;
-        }
-        if (convertedNumber >= 10) {
-            convertedString += "X";
-            convertedNumber -= 10;
-        }
-        if (convertedNumber >= 6) {
-            convertedString += "J";
-            convertedNumber -= 6;
-        }
-        if (convertedNumber >= 3) {
-            convertedString += "J";
-            convertedNumber -= 3;
-        }
-        if (convertedNumber >= 1) {
-            convertedString += "I";
-            convertedNumber -= 1;
-        }
-        return convertedString;
+        return number;
     }
 
 }
