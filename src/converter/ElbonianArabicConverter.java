@@ -56,9 +56,13 @@ public class ElbonianArabicConverter {
     // •	Lowercase letters are not permitted
     // https://stackoverflow.com/questions/10575624/java-string-see-if-a-string-contains-only-numbers-and-not-letters
     public ElbonianArabicConverter(String number) throws MalformedNumberException, ValueOutOfBoundsException {
-        this.number = number;
-        // remove spaces from string
-        number = number.replaceAll("\\s", "");
+        this.number = number.replaceAll("\\s", "");
+        if(this.number.matches("[0-9]+") && this.number.matches("[a-zA-Z]+")){
+            throw new MalformedNumberException("Cannot have both numbers a letters");
+        }
+        if(!(this.number.matches("[0-9]+") || this.number.matches("[a-zA-Z]+"))){
+            throw new MalformedNumberException("Must only be numbers or letters");
+        }
         // count of how many letters are in it
         HashMap<Character, Integer> hashOfLetters = new HashMap<Character, Integer>();
         //letters with rules about how many times they appear
@@ -88,42 +92,44 @@ public class ElbonianArabicConverter {
         for (int i = 0; i < letters.size(); i++) {
             letterPriority.put(letters.get(i), i);
         }
-        if (!number.matches("[0-9]+")) {
+
+//        Check for lowercase
+        for (int i = 0; i < this.number.length(); i++) {
+            //lowercase checker
+            if (Character.isLowerCase(this.number.charAt(i))) {
+                throw new MalformedNumberException("error lowercase");
+            }
+        }
+
+        if (!this.number.matches("[0-9]+")) {
             // checking for proper order of letters
             // checking for lowercase letters
-            int minVal = 0;
-            for (int i = 0; i < number.length(); i++) {
+            int minVal = 1000;
+            for (int i = 0; i < this.number.length(); i++) {
 
                 // Check for ordering of letter priority
-                int lastEbloianLetter = letterPriority.get(number.charAt(i));
-                if (lastEbloianLetter < minVal) {
+                int lastEbloianLetter = letterPriority.get(this.number.charAt(i));
+                if (lastEbloianLetter > minVal) {
                     throw new MalformedNumberException("error improper order");
                 }
                 minVal = lastEbloianLetter;
 
-
-                //lowercase checker
-                if (Character.isLowerCase(number.charAt(i))) {
-                    throw new MalformedNumberException("error lowercase");
-                }
-
-
                 //add number each type of letter
-                if (hashOfLetters.containsKey(number.charAt(i))) {
-                    hashOfLetters.put(number.charAt(i), hashOfLetters.get(i) + 1);
+                if (hashOfLetters.containsKey(this.number.charAt(i))) {
+                    hashOfLetters.put(this.number.charAt(i), hashOfLetters.get(this.number.charAt(i)) + 1);
                 } else {
-                    hashOfLetters.put(number.charAt(i), 1);
+                    hashOfLetters.put(this.number.charAt(i), 1);
                 }
             }
 
-            for (int i = 0; i < number.length(); i++) {
-                if (hashOf2BadLetters.contains(number.charAt(i))) {
-                    if (hashOfLetters.get(number.charAt(i)) >= 2) {
+            for (int i = 0; i < this.number.length(); i++) {
+                if (hashOf2BadLetters.contains(this.number.charAt(i))) {
+                    if (hashOfLetters.get(this.number.charAt(i)) >= 2) {
                         throw new MalformedNumberException("error 2 bad letters");
                     }
                 }
-                if (hashOf3BadLetters.contains(number.charAt(i))) {
-                    if (hashOfLetters.get(number.charAt(i)) >= 3) {
+                if (hashOf3BadLetters.contains(this.number.charAt(i))) {
+                    if (hashOfLetters.get(this.number.charAt(i)) >= 3) {
                         throw new MalformedNumberException("error 3 bad letters");
                     }
                 }
@@ -140,7 +146,7 @@ public class ElbonianArabicConverter {
         }
 //        Check if the number is out of bounds and return an error if it is
         int arabicNum = toArabic();
-        if (arabicNum >= 30000 || arabicNum <= 0) {
+        if (arabicNum >= 3000 || arabicNum <= 0) {
             throw new ValueOutOfBoundsException("The value is out of bounds");
         }
     }
