@@ -18,13 +18,13 @@ public class ElbonianArabicConverter {
     private final String number;
 
     //list of letters from smallest to largest
-    private List<Character> letters = new LinkedList<Character>(Arrays.asList('I', 'J', 'K', 'X', 'Y', 'Z', 'C', 'D', 'E', 'M'));
-    private HashMap<Character, Integer> letterPriority = new HashMap<Character, Integer>();
+    private List<Character> letters = new LinkedList<>(Arrays.asList('I', 'J', 'K', 'X', 'Y', 'Z', 'C', 'D', 'E', 'M'));
+    private HashMap<Character, Integer> letterPriority = new HashMap<>();
 
     //list of numbers smallest to largest
-    private List<Integer> numberList = new LinkedList<Integer>(Arrays.asList(1, 3, 6, 10, 30, 60, 100, 300, 600, 1000));
-    private HashMap<Character, Integer> characterToElbonian = new HashMap<Character, Integer>();
-
+    private List<Integer> numberList = new LinkedList<>(Arrays.asList(1, 3, 6, 10, 30, 60, 100, 300, 600, 1000));
+    private HashMap<Character, Integer> characterToElbonianAribicValue = new HashMap<>();
+    private HashMap<Integer, Character> aribicValueToElbonianCharacter = new HashMap<>();
 
     /**
      * Constructor for the ElbonianArabic class that takes a string. The string should contain a valid
@@ -62,71 +62,87 @@ public class ElbonianArabicConverter {
         // count of how many letters are in it
         HashMap<Character, Integer> hashOfLetters = new HashMap<Character, Integer>();
         //letters with rules about how many times they appear
+        //Letters that can only appear once
         List<Character> twoBadLetters = Arrays.asList('D', 'E', 'Y', 'Z', 'J', 'K');
-        List<Character> threeBadLetters = Arrays.asList('M', 'C', 'X', 'I');
         HashSet<Character> hashOf2BadLetters = new HashSet<Character>();
+        // Letters than can only appear twice
+        List<Character> threeBadLetters = Arrays.asList('M', 'C', 'X', 'I');
         HashSet<Character> hashOf3BadLetters = new HashSet<Character>();
 
-        //filling hashset
-        twoBadLetters.stream().map(character -> hashOf2BadLetters.add(character));
-        threeBadLetters.stream().map(character -> hashOf3BadLetters.add(character));
+        //filling hashsets of the letters that can only appear X number of times
+        twoBadLetters.stream().map(hashOf2BadLetters::add);
+        threeBadLetters.stream().map(hashOf3BadLetters::add);
 
         //filling hashmap to connect Elbonian to integers
         for (int i = 0; i < letters.size(); i++) {
-            characterToElbonian.put(letters.get(i), numberList.get(i));
+            characterToElbonianAribicValue.put(letters.get(i), numberList.get(i));
+        }
+
+        //filling hashmap to connect integers to elbonian
+        for (int i = 0; i < letters.size(); i++) {
+            aribicValueToElbonianCharacter.put(numberList.get(i), letters.get(i));
         }
 
 
-        // putting list into hashmap
+        // putting list into priority hashmap
         for (int i = 0; i < letters.size(); i++) {
             letterPriority.put(letters.get(i), i);
         }
+        if (!number.matches("[0-9]+")) {
+            // checking for proper order of letters
+            // checking for lowercase letters
+            int minVal = 0;
+            for (int i = 0; i < number.length(); i++) {
 
-        // checking for proper order of letters
-        // checking for lowercase letters
-        int minVal = 0;
-        for (int i = 0; i < number.length(); i++) {
-            int lastEbloianLetter = letterPriority.get(number.charAt(i));
-            if (lastEbloianLetter < minVal) {
-                throw new MalformedNumberException("error improper order");
-            }
-            minVal = lastEbloianLetter;
-            //lowercase checker
-            if (Character.isLowerCase(number.charAt(i))) {
-                throw new MalformedNumberException("error lowercase");
-            }
-            //add number each type of letter
-            if (hashOfLetters.containsKey(number.charAt(i))) {
-                hashOfLetters.put(number.charAt(i), hashOfLetters.get(i) + 1);
-            } else {
-                hashOfLetters.put(number.charAt(i), 1);
-            }
-        }
+                // Check for ordering of letter priority
+                int lastEbloianLetter = letterPriority.get(number.charAt(i));
+                if (lastEbloianLetter < minVal) {
+                    throw new MalformedNumberException("error improper order");
+                }
+                minVal = lastEbloianLetter;
 
-        for (int i = 0; i < number.length(); i++) {
-            if (hashOf2BadLetters.contains(number.charAt(i))) {
-                if (hashOfLetters.get(number.charAt(i)) >= 2) {
-                    throw new MalformedNumberException("error 2 bad letters");
+
+                //lowercase checker
+                if (Character.isLowerCase(number.charAt(i))) {
+                    throw new MalformedNumberException("error lowercase");
+                }
+
+
+                //add number each type of letter
+                if (hashOfLetters.containsKey(number.charAt(i))) {
+                    hashOfLetters.put(number.charAt(i), hashOfLetters.get(i) + 1);
+                } else {
+                    hashOfLetters.put(number.charAt(i), 1);
                 }
             }
-            if (hashOf3BadLetters.contains(number.charAt(i))) {
-                if (hashOfLetters.get(number.charAt(i)) >= 3) {
-                    throw new MalformedNumberException("error 3 bad letters");
+
+            for (int i = 0; i < number.length(); i++) {
+                if (hashOf2BadLetters.contains(number.charAt(i))) {
+                    if (hashOfLetters.get(number.charAt(i)) >= 2) {
+                        throw new MalformedNumberException("error 2 bad letters");
+                    }
+                }
+                if (hashOf3BadLetters.contains(number.charAt(i))) {
+                    if (hashOfLetters.get(number.charAt(i)) >= 3) {
+                        throw new MalformedNumberException("error 3 bad letters");
+                    }
                 }
             }
+            if (hashOfLetters.containsKey('D') & hashOfLetters.containsKey('E') & hashOfLetters.containsKey('C')) {
+                throw new MalformedNumberException("error D, E, C appeared");
+            }
+            if (hashOfLetters.containsKey('Y') & hashOfLetters.containsKey('Z') & hashOfLetters.containsKey('X')) {
+                throw new MalformedNumberException("error Y, Z, X appeared");
+            }
+            if (hashOfLetters.containsKey('J') & hashOfLetters.containsKey('K') & hashOfLetters.containsKey('I')) {
+                throw new MalformedNumberException("error J, K, I appeared");
+            }
         }
-        if (hashOfLetters.containsKey('D') & hashOfLetters.containsKey('E') & hashOfLetters.containsKey('C')) {
-            throw new MalformedNumberException("error D, E, C appeared");
+//        Check if the number is out of bounds and return an error if it is
+        int arabicNum = toArabic();
+        if (arabicNum >= 30000 || arabicNum <= 0) {
+            throw new ValueOutOfBoundsException("The value is out of bounds");
         }
-        if (hashOfLetters.containsKey('Y') & hashOfLetters.containsKey('Z') & hashOfLetters.containsKey('X')) {
-            throw new MalformedNumberException("error Y, Z, X appeared");
-        }
-        if (hashOfLetters.containsKey('J') & hashOfLetters.containsKey('K') & hashOfLetters.containsKey('I')) {
-            throw new MalformedNumberException("error J, K, I appeared");
-        }
-
-        // TODO check to see if the number is valid, then set it equal to the string
-
     }
 
     /**
@@ -136,13 +152,14 @@ public class ElbonianArabicConverter {
      * @return An arabic value
      */
     public int toArabic() {
-        // TODO Fill in the method's body
         int convertedNumber = 0;
         //if its in elbonian
-        if (number.matches("[0-9]+") != true) {
+        if (!number.matches("[0-9]+")) {
             for (char c : number.toCharArray()) {
-                convertedNumber += characterToElbonian.get(c);
+                convertedNumber += characterToElbonianAribicValue.get(c);
             }
+        } else {
+            convertedNumber = Integer.parseInt(number);
         }
         return convertedNumber;
     }
@@ -153,21 +170,25 @@ public class ElbonianArabicConverter {
      * @return An Elbonian value
      */
     public String toElbonian() {
-        String convertedString = "";
-        int convertedNumber;
-        // TODO Fill in the method's body
-        //if number is already in Elbonian format
-        //if number is in arabic format
-        if (number.matches("[0-9]+") == true) {
+//        Make returnString
+        StringBuilder convertedString = new StringBuilder();
 
-            convertedNumber = Integer.parseInt(number);
-            for (int i = letters.size(); i > 0; i--) {
-                while (convertedNumber > characterToElbonian.get(letters.get(i))) {
-                    convertedNumber -= characterToElbonian.get(numberList.get(i));
-                    convertedString += characterToElbonian.get(letters.get(i));
+        //If number is in arabic format
+        if (number.matches("[0-9]+")) {
+//            Convert string to int
+            int convertedNumber = Integer.parseInt(number);
+//            Place holder for the aribic number of the elbonian number we are on
+            int elbonianNumTmp;
+//            For every char in the string. Start at the biggest and go downwards to Zero
+            for (int i = letters.size() - 1; i >= 0; i--) {
+//                Get the aribic value of the char
+                elbonianNumTmp = characterToElbonianAribicValue.get(letters.get(i));
+                while (convertedNumber >= elbonianNumTmp) {
+                    convertedNumber -= elbonianNumTmp;
+                    convertedString.append(letters.get(i));
                 }
             }
-            return convertedString;
+            return convertedString.toString();
         }
         return number;
     }
