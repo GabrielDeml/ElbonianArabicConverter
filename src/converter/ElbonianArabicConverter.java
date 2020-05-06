@@ -56,11 +56,20 @@ public class ElbonianArabicConverter {
     // •	Lowercase letters are not permitted
     // https://stackoverflow.com/questions/10575624/java-string-see-if-a-string-contains-only-numbers-and-not-letters
     public ElbonianArabicConverter(String number) throws MalformedNumberException, ValueOutOfBoundsException {
-        this.number = number.replaceAll("\\s", "");
-        if(this.number.matches("[0-9]+") && this.number.matches("[a-zA-Z]+")){
+        this.number = number;
+        try {
+            if (Integer.parseInt(this.number) < 0) {
+                throw new ValueOutOfBoundsException("You are less than 0");
+            }
+        } catch (NumberFormatException ignored) {
+        }
+        if (this.number.contains(" ")) {
+            throw new MalformedNumberException("Please remove the spaces");
+        }
+        if (this.number.matches("[0-9]+") && this.number.matches("[a-zA-Z]+")) {
             throw new MalformedNumberException("Cannot have both numbers a letters");
         }
-        if(!(this.number.matches("[0-9]+") || this.number.matches("[a-zA-Z]+"))){
+        if (!(this.number.matches("[0-9]+") || this.number.matches("[a-zA-Z]+"))) {
             throw new MalformedNumberException("Must only be numbers or letters");
         }
         // count of how many letters are in it
@@ -68,14 +77,15 @@ public class ElbonianArabicConverter {
         //letters with rules about how many times they appear
         //Letters that can only appear once
         List<Character> twoBadLetters = Arrays.asList('D', 'E', 'Y', 'Z', 'J', 'K');
-        HashSet<Character> hashOf2BadLetters = new HashSet<Character>();
         // Letters than can only appear twice
         List<Character> threeBadLetters = Arrays.asList('M', 'C', 'X', 'I');
-        HashSet<Character> hashOf3BadLetters = new HashSet<Character>();
+//        HashSet<Character> hashOf3BadLetters = new HashSet<Character>();
 
         //filling hashsets of the letters that can only appear X number of times
-        twoBadLetters.stream().map(hashOf2BadLetters::add);
-        threeBadLetters.stream().map(hashOf3BadLetters::add);
+        HashSet<Character> hashOf2BadLetters = new HashSet<Character>(twoBadLetters);
+        HashSet<Character> hashOf3BadLetters = new HashSet<Character>(threeBadLetters);
+        List<Character> lettersThatExistList = Arrays.asList('M','C','X','I','D','Y','J','E','Z','K');
+        HashSet<Character> lettersThatExist = new HashSet<Character>(lettersThatExistList);
 
         //filling hashmap to connect Elbonian to integers
         for (int i = 0; i < letters.size(); i++) {
@@ -102,6 +112,11 @@ public class ElbonianArabicConverter {
         }
 
         if (!this.number.matches("[0-9]+")) {
+            for (int i = 0; i < this.number.length(); i++) {
+                if (!lettersThatExist.contains(this.number.charAt(i))) {
+                    throw new MalformedNumberException("Non valid Char");
+                }
+            }
             // checking for proper order of letters
             // checking for lowercase letters
             int minVal = 1000;
